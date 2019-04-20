@@ -4,8 +4,11 @@
     <title>Video</title>
 </head>
 <body>
-
-<iframe width="560" height="315" src=" <%= url%> " frameborder="0" allowfullscreen>
-</iframe>
+    <button id="play-button">Play</button>
+    <button id="pause-button">Pause</button>    
+    <button id="toggle-button">Play/Pause</button>    
+    <br>
+    <iframe id="video" class="youtube-video" width="560" height="315" src=" <%= url%> " frameborder="0" allowfullscreen></iframe>
+    <script src="js/video.js"></script>
 </body>
 </html>
