@@ -3,23 +3,17 @@
 <head>
     <title>Local Video</title>
     <% include ./partials/header.ejs %>
-
 </head>
 <body>
     <div class="container">
-        <button onclick="playPause()">Play/Pause</button><br>
-        <video id="video" width="560" height="315" controls>
-            <source src="/uploads/<%= url%>" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
+        <div class="p-4">
+            <video id="video" width="890" height="500" controls>
+                <source src="/uploads/<%= url%>" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
 
         <div>
-            <p>Here lies content =></p>
-            <div id="content">                
-                <img src="/loading.gif" height="40px">
-                <p>Initializing</p>     
-            </div>
-            
             <p>Here lies content2 =></p>
             <div id="content2">
                 <img src="/loading.gif" height="40px">

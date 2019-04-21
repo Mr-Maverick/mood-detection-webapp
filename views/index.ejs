@@ -7,27 +7,31 @@
 <body>
     <div class="container py-4">
         <h1 class="display-3">Emotion AI</h1>
-        <form action="/video" method="POST">
-            <h2 class="py-3">YouTube Video</h2>
-            <div class="form-group">
-                <input class="form-control" type="text" placeholder="Youtube URL" name="videoLink">
+        <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-8">
+                <form class="my-4" action="/video" method="POST">
+                    <h2 class="py-3">YouTube Video</h2>
+                    <div class="form-group">
+                        <input class="form-control" type="text" placeholder="Youtube URL" name="videoLink">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+                
+                <form class="my-4" action="/localVideo" method="POST" enctype="multipart/form-data">
+                    <h2 class="py-3">Local Video</h2>
+                    <div class="form-group">
+                        <input class="form-control" type="file" name="local">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
             </div>
-            <div class="form-group">
-                <button class="btn btn-primary">Submit</button>
-            </div>
-        </form>
-        
-        <form action="/localVideo" method="POST" enctype="multipart/form-data">
-            <h2 class="py-3">Local Video</h2>
-            <div class="form-group">
-                <input class="form-control" type="file" name="local">
-            </div>
-            <div class="form-group">
-                <button class="btn btn-primary">Submit</button>
-            </div>
-        </form>
-
-        <h2 class="py-3"><a href="/localVideo" class="text-dark"> Locally Saved Video</a></h2>
+            <div class="col-sm-2"></div>
+        </div>
     </div>
 </body>
 </html>
