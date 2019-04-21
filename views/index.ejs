@@ -11,6 +11,11 @@
             <input type="text" placeholder="Youtube URL" name="videoLink">
             <input type="button" value="Submit!">
         </form>
+        
+        <form action="/localVideo" method="POST" enctype="multipart/form-data">
+            <input type="file" name="local">
+            <button>Submit2</button>
+        </form>
 
         <a href="/localVideo"> Locally Saved Video</a>
     </div>
