@@ -1,7 +1,10 @@
 const express   = require('express')
 const app       = express()
+const http      = require('http').Server(app);
 const bodyParser = require('body-parser');
 const ejs       = require('ejs');
+const io        = require('socket.io')(8080);
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended : true }));
@@ -28,6 +31,15 @@ app.post('/video', (req,res)=>{
     res.redirect(redirectLink)
 })
 
-app.listen(3000, () => {
+io.on('connection', socket => {
+    socket.on('keyApp', msg => {
+        io.emit('keyHtml', msg);
+    });
+    socket.on('keyApp2', msg => {
+        io.emit('keyHtml2', msg);
+    });
+  });
+  
+http.listen(3000, () => {
     console.log('Application started at https://localhost:3000');
 })
