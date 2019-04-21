@@ -2,30 +2,31 @@
 <html>
 <head>
     <title>Local Video</title>
+    <% include ./partials/header.ejs %>
+
 </head>
 <body>
-    <button onclick="playPause()">Play/Pause</button><br>
-    <video id="video" width="560" height="315" controls>
-        <source src="data/joker.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+    <div class="container">
+        <button onclick="playPause()">Play/Pause</button><br>
+        <video id="video" width="560" height="315" controls>
+            <source src="data/joker.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
 
-    <div>
-        Here lies content =>
-        <div id="content">
-
-        </div>
-        
-        Here lies content2 =>
-        <div id="content2">
-
+        <div>
+            <p>Here lies content =></p>
+            <div id="content">                
+                <img src="/loading.gif" height="40px">
+                <p>Initializing</p>     
+            </div>
+            
+            <p>Here lies content2 =></p>
+            <div id="content2">
+                <img src="/loading.gif" height="40px">
+                <p>Initializing</p>     
+            </div>
         </div>
     </div>
-
-    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-    <script src="js/socket.js"></script>
-
     <script src="js/localVideo.js"></script>
 </body>
 </html>

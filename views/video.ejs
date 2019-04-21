@@ -2,25 +2,24 @@
 <html>
 <head>
     <title>Video</title>
+    <% include ./partials/header.ejs %>
 </head>
 <body>
-    <button id="play-button">Play</button>
-    <button id="pause-button">Pause</button>    
-    <button id="toggle-button">Play/Pause</button>    
-    <br>
-    <iframe id="video" class="youtube-video" width="560" height="315" src=" <%= url%> " frameborder="0" allowfullscreen></iframe>
+    <div class="container">
+        <button id="play-button">Play</button>
+        <button id="pause-button">Pause</button>    
+        <button id="toggle-button">Play/Pause</button>    
+        <br>
+        <iframe id="video" class="youtube-video" width="560" height="315" src=" <%= url%> " frameborder="0" allowfullscreen></iframe>
 
-    <div>
-        Here lies content2 =>
-        <div id="content2">
-
-        </div>
-    </div>    
-
-    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-    <script src="js/socket.js"></script>
-
+        <div>
+            <p>Here lies content2 =></p>
+            <div id="content2">
+                <img src="/loading.gif" height="40px">
+                <p>Initializing</p>          
+            </div>
+        </div>    
+    </div>
     <script src="js/video.js"></script>
 </body>
 </html>
