@@ -90,7 +90,8 @@ while True:
         x, y = None, None
 
         if len(faces) ==0 :
-            msg = 'No Face Detected;NaN;Distracted;Confidence= 100%;y' #5th arguement is 'y' ie 'yes, pause the video' 
+            msg = 'No Face Detected;NaN;Distracted;Confidence= 100%;y;' #5th arguement is 'y' ie 'yes, pause the video' 
+            msg += str(cntTime)
             Engage.append(0)
 
         else:
@@ -192,9 +193,12 @@ while True:
             text = top + ' + ' + label
             cv2.putText(frame, text, (x, y-50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 4, cv2.LINE_AA)
 
-            msg = ';'.join([emotion,str(emotion_acc),distraction,str(distraction_acc),pause]) 
+            msg = ';'.join([emotion,str(emotion_acc),distraction,str(distraction_acc),pause,str(cntTime)]) 
 
         print(msg)
+
+        cv2.imwrite('../public_static/frames/fig'+str(cntTime%10)+'.png', frame)
+
         if isSocket==1:
             socket.emit('emoNode', msg)
 

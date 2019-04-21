@@ -47,6 +47,14 @@ app.post('/localVideo', upload.single('local'), (req,res)=>{
     res.redirect(redirectLink)
 })
 
+app.get('/mood', (req,res) => {
+    res.render('mood.ejs')
+})
+
+app.get('*', (req,res) => {
+    res.redirect('/')
+})
+
 io.on('connection', socket => {
     socket.on('emoNode', msg => {
         io.emit('emoHtml', msg);

@@ -5,13 +5,13 @@
     <% include ./partials/header.ejs %>
 </head>
 <body>
-    <div class="container py-4">
-        <h1 class="display-3">Engage AI</h1>
+    <div class="container py-4" id="outerdiv">
+        <h1 class="display-3 text-light ">Engage AI</h1>
         <div class="row">
             <div class="col-sm-2"></div>
             <div class="col-sm-8">
                 <form class="my-4" action="/video" method="POST">
-                    <h2 class="py-3">YouTube Video</h2>
+                    <h2 class="py-1 text-light">YouTube Video</h2>
                     <div class="form-group">
                         <input class="form-control" type="text" placeholder="Youtube URL" name="videoLink">
                     </div>
@@ -21,7 +21,7 @@
                 </form>
                 
                 <form class="my-4" action="/localVideo" method="POST" enctype="multipart/form-data">
-                    <h2 class="py-3">Local Video</h2>
+                    <h2 class="py-1 text-light">Local Video</h2>
                     <div class="form-group">
                         <input class="form-control" type="file" name="local">
                     </div>
@@ -29,6 +29,7 @@
                         <button class="btn btn-primary">Submit</button>
                     </div>
                 </form>
+                <h2 class="py-3"><a href="/mood" class="text-light">Mood Detection (without video)</a></h2>                
             </div>
             <div class="col-sm-2"></div>
         </div>
