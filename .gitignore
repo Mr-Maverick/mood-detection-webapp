@@ -1,4 +1,5 @@
 node_modules/
 public_static/uploads/
 todo.txt
-Python\ Code/models/ResNet-50.h5
+Code_Python/models/ResNet-50.h5
+Code_Python
