@@ -48,11 +48,8 @@ app.post('/localVideo', upload.single('local'), (req,res)=>{
 })
 
 io.on('connection', socket => {
-    socket.on('keyApp', msg => {
-        io.emit('keyHtml', msg);
-    });
-    socket.on('keyApp2', msg => {
-        io.emit('keyHtml2', msg);
+    socket.on('emoNode', msg => {
+        io.emit('emoHtml', msg);
     });
   });
   

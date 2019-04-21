@@ -1,9 +1,14 @@
+const socket    = io('http://localhost:8080');
+
 var tag = document.createElement('script');
 tag.src = "//www.youtube.com/player_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-var player, x=0; // x=0 => video paused
+var player;
+cy = 0 //consecutive yes-pause commands
+cn = 0 //consecutive no-pause commands
+
 
 function onYouTubePlayerAPIReady() {
     player = new YT.Player('video', {
@@ -14,27 +19,25 @@ function onYouTubePlayerAPIReady() {
 }
 
 function onPlayerReady(event) {
-  
-    var playButton = document.getElementById("play-button");
-    playButton.addEventListener("click", function() {
-        player.playVideo();
-        x=1;
-    });
 
-    var pauseButton = document.getElementById("pause-button");
-    pauseButton.addEventListener("click", function() {
-        player.pauseVideo();
-        x=0;
-    });
+    socket.on('emoHtml', msg => {
+        msg = msg.split(";")
+        pause = msg[4]
+        $('#content').html(`<h2>${msg[0]}</h2><h4>${msg[1]}</h4>`);
+        $('#content2').html(`<h2>${msg[2]}</h2><h4>${msg[3]}</h4>`);
+        if(pause == "y"){
+            cy += 1
+            cn = 0
+        }
+        else{
+            cy = 0
+            cn += 1
+        }
     
-    var toggleButton = document.getElementById("toggle-button");
-    toggleButton.addEventListener("click", function() {
-        if(x)
+    
+        if(cy>3)
             player.pauseVideo();
-        else
+        if(cn>3)
             player.playVideo();
-
-        x=1-x;
     });
-
 }

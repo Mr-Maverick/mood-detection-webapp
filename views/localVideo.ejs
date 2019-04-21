@@ -7,19 +7,14 @@
 <body>
     <div class="container">
         <div class="p-4">
-            <video id="video" width="890" height="500" controls>
+            <video id="video" width="800" height="450" controls>
                 <source src="/uploads/<%= url%>" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
         </div>
 
-        <div>
-            <p>Here lies content2 =></p>
-            <div id="content2">
-                <img src="/loading.gif" height="40px">
-                <p>Initializing</p>     
-            </div>
-        </div>
+        <% include ./partials/predictions.ejs %>
+
     </div>
     <script src="js/localVideo.js"></script>
 </body>
