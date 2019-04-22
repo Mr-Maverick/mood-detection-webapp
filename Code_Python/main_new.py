@@ -13,6 +13,9 @@ import socket
 import time
 from socketIO_client import SocketIO, LoggingNamespace
 
+isSocket = 1
+debug    = 0
+
 #______________________________________________________________
 
 import sys, termios, atexit
@@ -59,8 +62,6 @@ def keyPressEnd():
 
 #______________________________________________________
 
-isSocket = 1
-
 if isSocket==1:
     socket =  SocketIO('localhost', 8080, LoggingNamespace)
     print('Connection started')
@@ -95,7 +96,7 @@ while True:
     if(inx!='y' and inx!='m'):
         break
 
-    print('Server Started. To stop server- press q on terminal')
+    print('Server Started. Press `q` to stop, `p` to pause. (Keys to be pressed on terminal)')
     keyPressStart()
 
     frame_w = 1200
@@ -251,8 +252,10 @@ while True:
                 cv2.putText(frame, text, (x, y-50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 4, cv2.LINE_AA)
 
                 msg = ';'.join([emotion,str(emotion_acc),distraction,str(distraction_acc),pause,str(cntTime)]) 
+                disp = ' '.join([emotion,str(emotion_acc),distraction,str(distraction_acc),'Frame#',str(cntTime)]) 
 
-            print(msg)
+            if debug:
+                print(disp)
             if(inx=='m'):
                 cv2.imwrite('../public_static/frames/fig'+str(cntTime%10)+'.png', frame)
 
@@ -261,15 +264,33 @@ while True:
 
             if isSocket==0:
                 cv2.imshow('Video', frame)
-
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord('q'):
-                break
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord('q'):
+                    break
 
             if kbhit():
                 ch = getch()
+                if(ch=='p'):
+                    keyPressEnd()
+                    video_capture.release()
+                    cv2.destroyAllWindows()
+                    
+                    if isSocket==1:
+                        socket.emit('emoNode', 'pause;pause;pause;pause;pause;pause')
+
+
+                    print('Server paused. Press any key and then press enter to resume.')
+                    x=input()
+                    video_capture = cv2.VideoCapture(0)
+                    keyPressStart()
+                    print('Server Resumed. Press `q` to stop, `p` to pause. (Keys to be pressed on terminal)')
                 if(ch=='q'):
                     break
+                
+    
+    if isSocket==1:
+        socket.emit('emoNode', 'saving;saving;saving;saving;saving;saving')
+
 
 
     #Engagement Level Graph

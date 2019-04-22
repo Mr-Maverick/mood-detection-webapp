@@ -11,8 +11,22 @@ socket.on('emoHtml', msg => {
         <h2 class="text-light m-4">
             <b>Session ended.</b>
         </h2>
-        <button type="button" class="btn btn-lg btn-success"><a href="/analysis" class="text-light">Show Analysis</a></button> 
+        <a href="/analysis" class="text-light"><button type="button" class="btn btn-lg btn-success">Show Analysis</button></a>
         `);
+    }
+    else if(msg[0]=="saving"){
+        $('#outerdiv').html(`
+        <h2 class="text-light m-4">
+            <b>Session ended.</b>
+        </h2>
+        <img src="/loading.gif" height="30px" >
+        <h2 style="display: inline" class="text-light mx-4">Preparing Analytics    </h2>
+        <img src="/loading.gif" height="30px" >
+        `);
+    }
+    else if(msg[0]=="pause"){ //session pause, not video pause
+        $('#content').html(`<h4>Session Paused</h4>`);
+        $('#content2').html(`<h4>Session Paused</h4>`);
     }
     else{
         pause = msg[4]
