@@ -1,3 +1,4 @@
+## Without keypress loop break
 import cv2
 import numpy as np
 from keras.models import load_model
@@ -62,6 +63,11 @@ cntNeutral = 0
 cntSadness = 0
 cntSurprise = 0
 cntHappiness = 0
+
+print('here')
+x=input()
+print(x)
+print('there')
 
 while True:
     #increse time
@@ -151,11 +157,12 @@ while True:
                 # save eye result
                 probs.append(pred[0])
 
-            # get average score for all eyes
-            probs_mean = np.mean(probs)
-
-            if(np.isnan(probs_mean)):
+            if(len(eyes)==0):
                 probs_mean = (np.random.uniform(0.6,0.7))
+
+            else:
+                probs_mean = np.mean(probs)
+            # get average score for all eyes
 
             # get label
             if probs_mean <= 0.5:
@@ -205,7 +212,8 @@ while True:
         if isSocket==0:
             cv2.imshow('Video', frame)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
             break
 
 
