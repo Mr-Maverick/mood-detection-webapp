@@ -51,6 +51,10 @@ app.get('/mood', (req,res) => {
     res.render('mood.ejs')
 })
 
+app.get('/analysis', (req,res) => {
+    res.render('analysis.ejs')
+})
+
 app.get('*', (req,res) => {
     res.redirect('/')
 })
