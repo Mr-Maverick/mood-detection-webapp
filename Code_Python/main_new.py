@@ -13,52 +13,52 @@ import socket
 import time
 from socketIO_client import SocketIO, LoggingNamespace
 
-isSocket = 1
+isSocket = 0
 debug    = 0
 
 #______________________________________________________________
 
-import sys, termios, atexit
-from select import select
-
-# save the terminal settings
-fd = sys.stdin.fileno()
-new_term = termios.tcgetattr(fd)
-old_term = termios.tcgetattr(fd)
-
-# new terminal setting unbuffered
-new_term[3] = (new_term[3] & ~termios.ICANON & ~termios.ECHO)
-
-# switch to normal terminal
-def set_normal_term():
-    termios.tcsetattr(fd, termios.TCSAFLUSH, old_term)
-
-# switch to unbuffered terminal
-def set_curses_term():
-    termios.tcsetattr(fd, termios.TCSAFLUSH, new_term)
-
-def putch(ch):
-    sys.stdout.write(ch)
-
-def getch():
-    return sys.stdin.read(1)
-
-def getche():
-    ch = getch()
-    putch(ch)
-    return ch
-
-def kbhit():
-    dr,dw,de = select([sys.stdin], [], [], 0)
-    return dr
-
-def keyPressStart():
-    atexit.register(set_normal_term)
-    set_curses_term()
-
-def keyPressEnd():
-    atexit.register(set_curses_term)
-    set_normal_term()
+# import sys, termios, atexit
+# from select import select
+#
+# # save the terminal settings
+# fd = sys.stdin.fileno()
+# new_term = termios.tcgetattr(fd)
+# old_term = termios.tcgetattr(fd)
+#
+# # new terminal setting unbuffered
+# new_term[3] = (new_term[3] & ~termios.ICANON & ~termios.ECHO)
+#
+# # switch to normal terminal
+# def set_normal_term():
+#     termios.tcsetattr(fd, termios.TCSAFLUSH, old_term)
+#
+# # switch to unbuffered terminal
+# def set_curses_term():
+#     termios.tcsetattr(fd, termios.TCSAFLUSH, new_term)
+#
+# def putch(ch):
+#     sys.stdout.write(ch)
+#
+# def getch():
+#     return sys.stdin.read(1)
+#
+# def getche():
+#     ch = getch()
+#     putch(ch)
+#     return ch
+#
+# def kbhit():
+#     dr,dw,de = select([sys.stdin], [], [], 0)
+#     return dr
+#
+# def keyPressStart():
+#     atexit.register(set_normal_term)
+#     set_curses_term()
+#
+# def keyPressEnd():
+#     atexit.register(set_curses_term)
+#     set_normal_term()
 
 #______________________________________________________
 
@@ -90,14 +90,14 @@ def preprocess_input(image):
     return x
 
 while True:
-    
+
     print('Start server? (y for yes; m for yes WITH mood; any other to stop)')
     inx = input()
     if(inx!='y' and inx!='m'):
         break
 
-    print('Server Started. Press `q` to stop, `p` to pause. (Keys to be pressed on terminal)')
-    keyPressStart()
+    # print('Server Started. Press `q` to stop, `p` to pause. (Keys to be pressed on terminal)')
+    # keyPressStart()
 
     frame_w = 1200
     border_w = 2
@@ -108,6 +108,8 @@ while True:
     scale_factor = 1.1
     min_neighbours = 5
     Engage = list()
+    emoAccuracy = list()
+
 
     video_capture = cv2.VideoCapture(0)
 
@@ -119,10 +121,11 @@ while True:
     cntSadness = 0
     cntSurprise = 0
     cntHappiness = 0
+    cntFocused = 0
+    cntDistracted = 0
 
     while True:
-        #increse time
-        cntTime += 1
+
 
         if not video_capture.isOpened():
             print('Unable to load camera.')
@@ -147,11 +150,13 @@ while True:
             x, y = None, None
 
             if len(faces) ==0 :
-                msg = 'No Face Detected;-;Distracted;Confidence= 100%;y;' #5th arguement is 'y' ie 'yes, pause the video' 
+                msg = 'No Face Detected;-;Distracted;Confidence= 100%;y;' #5th arguement is 'y' ie 'yes, pause the video'
                 msg += str(cntTime)
                 Engage.append(0)
 
             else:
+                #increse time
+                cntTime += 1
                 biggest_face_index = 0
                 biggest_face_size = 0
                 ixx = 0
@@ -160,7 +165,7 @@ while True:
                         biggest_face_size = w*h
                         biggest_face_index = ixx
                     ixx += 1
-                    
+
                 (x, y, w, h) = faces[biggest_face_index]
                 ROI_gray = gray_frame[y:y+h, x:x+w]
                 ROI_color = frame[y:y+h, x:x+w]
@@ -179,6 +184,7 @@ while True:
                 prediction = model.predict(emotion)
                 #print(emotions[np.argmax(prediction)] + " predicted with accuracy " + str(max(prediction[0])))
                 top = emotions[np.argmax(prediction)]
+                emoAccuracy.append(prediction)
                 emotion = top
                 emotion_acc = int(max(prediction[0])*100)
                 emotion_acc = 'Confidence= ' + str(emotion_acc) + '%'
@@ -208,27 +214,28 @@ while True:
                     # save eye result
                     probs.append(pred[0])
 
-                if(len(eyes)==0):
-                    probs_mean = (np.random.uniform(0.6,0.7))
-
+                probs_mean = np.mean(probs)
+                if(np.isnan(probs_mean)):
+                    Engage.append(np.random.uniform(0.6,0.7))
+                    distraction_acc = 1 - Engage[-1]
                 else:
-                    probs_mean = np.mean(probs)
-                # get average score for all eyes
+                    Engage.append(probs_mean)
+                    distraction_acc = 1 - Engage[-1]
 
                 # get label
                 if probs_mean <= 0.5:
                     label = 'Distracted'
-                    distraction_acc = 1 - probs_mean
                     pause = 'y'
+                    cntDistracted += 1
                 else:
                     label = 'Focused'
-                    distraction_acc = probs_mean
                     pause = 'n'
+                    cntFocused += 1
 
                 distraction = label
                 distraction_acc = int(distraction_acc*100)
                 distraction_acc = 'Confidence= ' + str(distraction_acc) + '%'
-                
+
                 #increase cnt
                 if top == 'Anger':
                     cntAnger += 1
@@ -245,14 +252,12 @@ while True:
                 if top == 'Neutral':
                     cntNeutral += 1
 
-                #Append engagement level
-                Engage.append(probs_mean)
 
                 text = top + ' + ' + label
                 cv2.putText(frame, text, (x, y-50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 4, cv2.LINE_AA)
 
-                msg = ';'.join([emotion,str(emotion_acc),distraction,str(distraction_acc),pause,str(cntTime)]) 
-                disp = ' '.join([emotion,str(emotion_acc),distraction,str(distraction_acc),'Frame#',str(cntTime)]) 
+                msg = ';'.join([emotion,str(emotion_acc),distraction,str(distraction_acc),pause,str(cntTime)])
+                disp = ' '.join([emotion,str(emotion_acc),distraction,str(distraction_acc),'Frame#',str(cntTime)])
 
             if debug:
                 print(disp)
@@ -268,59 +273,126 @@ while True:
                 if key == ord('q'):
                     break
 
-            if kbhit():
-                ch = getch()
-                if(ch=='p'):
-                    keyPressEnd()
-                    video_capture.release()
-                    cv2.destroyAllWindows()
-                    
-                    if isSocket==1:
-                        socket.emit('emoNode', 'pause;pause;pause;pause;pause;pause')
+            # if kbhit():
+            #     ch = getch()
+            #     if(ch=='p'):
+            #         keyPressEnd()
+            #         video_capture.release()
+            #         cv2.destroyAllWindows()
+            #
+            #         if isSocket==1:
+            #             socket.emit('emoNode', 'pause;pause;pause;pause;pause;pause')
+            #
+            #
+            #         print('Server paused. Press any key and then press enter to resume.')
+            #         x=input()
+            #         video_capture = cv2.VideoCapture(0)
+            #         keyPressStart()
+            #         print('Server Resumed. Press `q` to stop, `p` to pause. (Keys to be pressed on terminal)')
+            #     if(ch=='q'):
+            #         break
 
 
-                    print('Server paused. Press any key and then press enter to resume.')
-                    x=input()
-                    video_capture = cv2.VideoCapture(0)
-                    keyPressStart()
-                    print('Server Resumed. Press `q` to stop, `p` to pause. (Keys to be pressed on terminal)')
-                if(ch=='q'):
-                    break
-                
-    
     if isSocket==1:
         socket.emit('emoNode', 'saving;saving;saving;saving;saving;saving')
 
 
 
     #Engagement Level Graph
-    time = np.arange(cntTime + 1)
-    engm = np.asarray(Engage)
+    time_array = np.arange(cntTime + 1)
+
+    emoAccuracy = np.array(emoAccuracy)
+    emoAccuracy = np.reshape(emoAccuracy,(-1,7))
+    print(emoAccuracy.shape)
+
     trace1 = go.Scatter(
-            x = time,
-            y = engm
+            x = time_array,
+            y = np.asarray(Engage)
             )
     data1=go.Data([trace1])
     layout1=go.Layout(title="Engagement Level Analysis", xaxis={'title':'Video Time'}, yaxis={'title':'Engagement Level'})
     figure1=go.Figure(data=data1,layout=layout1)
     pio.write_image(figure1, '../public_static/analytics/fig1.png')
-    pio.write_image(figure1, 'fig1.png')
+    #pio.write_image(figure1, 'fig1.png')
 
     #Mood Pie Chart
 
-    labels = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Sadness', 'Surprise', 'Neutral']
+    labels = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Sadness', 'Surprise']
     values = [cntAnger, cntDisgust, cntFear, cntHappiness, cntSadness, cntSurprise]
     trace2 = go.Pie(labels = labels,values = values)
     data2=go.Data([trace2])
     layout2=go.Layout(title="Mood Distribution")
     figure2=go.Figure(data=data2,layout=layout2)
     pio.write_image(figure2, '../public_static/analytics/fig2.png')
-    pio.write_image(figure2, 'fig2.png')
+    #pio.write_image(figure2, 'fig2.png')
 
+    #Focused Distracted Bar graph
+    trace3 = go.Pie(
+        labels = ['Focused','Distracted'],
+        values = [cntFocused,cntDistracted]
+    )
+    layout3 = go.Layout(title = "Focus Distribution")
+    data3 = go.Data([trace3])
+    figure3 = go.Figure(data = data3, layout = layout3)
+    pio.write_image(figure3, '../public_static/analytics/fig3.png')
+
+    traces = list()
+
+    traces.append(go.Scatter(
+        x = time_array,
+        y = emoAccuracy[:,0],
+        mode = 'lines',
+        name = 'Anger'
+    ))
+    traces.append(go.Scatter(
+        x = time_array,
+        y = emoAccuracy[:,1],
+        mode = 'lines',
+        name = 'Disgust'
+    ))
+    traces.append(go.Scatter(
+        x = time_array,
+        y = emoAccuracy[:,2],
+        mode = 'lines',
+        name = 'Fear'
+    ))
+    traces.append(go.Scatter(
+        x = time_array,
+        y = emoAccuracy[:,3],
+        mode = 'lines',
+        name = 'Happiness'
+    ))
+    traces.append(go.Scatter(
+        x = time_array,
+        y = emoAccuracy[:,4],
+        mode = 'lines',
+        name = 'Sadness'
+    ))
+    traces.append(go.Scatter(
+        x = time_array,
+        y = emoAccuracy[:,5],
+        mode = 'lines',
+        name = 'Surprise'
+    ))
+    traces.append(go.Scatter(
+        x = time_array,
+        y = emoAccuracy[:,6],
+        mode = 'lines',
+        name = 'Neutral'
+    ))
+
+    data4 = go.Data(traces)
+    layout4 = go.Layout(
+        title = "Emotion Confidence v Video Time",
+        width = 5000,
+        height = 5000
+    )
+    figure4 = go.Figure(data = data4, layout = layout4)
+    pio.write_image(figure4, '../public_static/analytics/fig4.png')
     # When everything is done, release the capture
     video_capture.release()
     cv2.destroyAllWindows()
-    keyPressEnd()
+    #keyPressEnd()
     print('Figures saved')
     if isSocket==1:
         socket.emit('emoNode', 'end;end;end;end;end;end')
