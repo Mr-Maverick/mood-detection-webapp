@@ -13,52 +13,54 @@ import socket
 import time
 from socketIO_client import SocketIO, LoggingNamespace
 
-isSocket = 0
+isSocket = 1
 debug    = 0
+firstTime = 1
+
 
 #______________________________________________________________
 
-# import sys, termios, atexit
-# from select import select
-#
-# # save the terminal settings
-# fd = sys.stdin.fileno()
-# new_term = termios.tcgetattr(fd)
-# old_term = termios.tcgetattr(fd)
-#
-# # new terminal setting unbuffered
-# new_term[3] = (new_term[3] & ~termios.ICANON & ~termios.ECHO)
-#
-# # switch to normal terminal
-# def set_normal_term():
-#     termios.tcsetattr(fd, termios.TCSAFLUSH, old_term)
-#
-# # switch to unbuffered terminal
-# def set_curses_term():
-#     termios.tcsetattr(fd, termios.TCSAFLUSH, new_term)
-#
-# def putch(ch):
-#     sys.stdout.write(ch)
-#
-# def getch():
-#     return sys.stdin.read(1)
-#
-# def getche():
-#     ch = getch()
-#     putch(ch)
-#     return ch
-#
-# def kbhit():
-#     dr,dw,de = select([sys.stdin], [], [], 0)
-#     return dr
-#
-# def keyPressStart():
-#     atexit.register(set_normal_term)
-#     set_curses_term()
-#
-# def keyPressEnd():
-#     atexit.register(set_curses_term)
-#     set_normal_term()
+import sys, termios, atexit
+from select import select
+
+# save the terminal settings
+fd = sys.stdin.fileno()
+new_term = termios.tcgetattr(fd)
+old_term = termios.tcgetattr(fd)
+
+# new terminal setting unbuffered
+new_term[3] = (new_term[3] & ~termios.ICANON & ~termios.ECHO)
+
+# switch to normal terminal
+def set_normal_term():
+    termios.tcsetattr(fd, termios.TCSAFLUSH, old_term)
+
+# switch to unbuffered terminal
+def set_curses_term():
+    termios.tcsetattr(fd, termios.TCSAFLUSH, new_term)
+
+def putch(ch):
+    sys.stdout.write(ch)
+
+def getch():
+    return sys.stdin.read(1)
+
+def getche():
+    ch = getch()
+    putch(ch)
+    return ch
+
+def kbhit():
+    dr,dw,de = select([sys.stdin], [], [], 0)
+    return dr
+
+def keyPressStart():
+    atexit.register(set_normal_term)
+    set_curses_term()
+
+def keyPressEnd():
+    atexit.register(set_curses_term)
+    set_normal_term()
 
 #______________________________________________________
 
@@ -91,13 +93,18 @@ def preprocess_input(image):
 
 while True:
 
-    print('Start server? (y for yes; m for yes WITH mood; any other to stop)')
+    print('Start session? (y for yes; m for yes WITH mood; any other to stop)')
     inx = input()
     if(inx!='y' and inx!='m'):
         break
+    
+    if inx=='m':
+        cv2.namedWindow('Mood')
+        cv2.moveWindow('Mood', 340,130)
 
-    # print('Server Started. Press `q` to stop, `p` to pause. (Keys to be pressed on terminal)')
-    # keyPressStart()
+
+    print('Session Started. Press `q` to stop, `p` to pause. (Keys to be pressed on terminal)')
+    keyPressStart()
 
     frame_w = 1200
     border_w = 2
@@ -214,22 +221,22 @@ while True:
                     # save eye result
                     probs.append(pred[0])
 
-                probs_mean = np.mean(probs)
-                if(np.isnan(probs_mean)):
-                    Engage.append(np.random.uniform(0.6,0.7))
-                    distraction_acc = 1 - Engage[-1]
+                if(len(eyes)==0):
+                    probs_mean = (np.random.uniform(0.6,0.7))
                 else:
-                    Engage.append(probs_mean)
-                    distraction_acc = 1 - Engage[-1]
+                    probs_mean = np.mean(probs)
+                Engage.append(probs_mean)
 
                 # get label
                 if probs_mean <= 0.5:
                     label = 'Distracted'
                     pause = 'y'
+                    distraction_acc = 1 - probs_mean
                     cntDistracted += 1
                 else:
                     label = 'Focused'
                     pause = 'n'
+                    distraction_acc = probs_mean
                     cntFocused += 1
 
                 distraction = label
@@ -261,8 +268,8 @@ while True:
 
             if debug:
                 print(disp)
-            if(inx=='m'):
-                cv2.imwrite('../public_static/frames/fig'+str(cntTime%10)+'.png', frame)
+            #if(inx=='m'):
+             #   cv2.imwrite('../public_static/frames/fig'+str(cntTime%10)+'.png', frame)
 
             if isSocket==1:
                 socket.emit('emoNode', msg)
@@ -273,26 +280,33 @@ while True:
                 if key == ord('q'):
                     break
 
-            # if kbhit():
-            #     ch = getch()
-            #     if(ch=='p'):
-            #         keyPressEnd()
-            #         video_capture.release()
-            #         cv2.destroyAllWindows()
-            #
-            #         if isSocket==1:
-            #             socket.emit('emoNode', 'pause;pause;pause;pause;pause;pause')
-            #
-            #
-            #         print('Server paused. Press any key and then press enter to resume.')
-            #         x=input()
-            #         video_capture = cv2.VideoCapture(0)
-            #         keyPressStart()
-            #         print('Server Resumed. Press `q` to stop, `p` to pause. (Keys to be pressed on terminal)')
-            #     if(ch=='q'):
-            #         break
+            if inx=='m':
+                img = cv2.resize(frame, (685,390))
+                cv2.imshow('Mood', img)
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord('q'):
+                    break
 
+            if kbhit():
+                ch = getch()
+                if(ch=='p'):
+                    keyPressEnd()
+                    video_capture.release()
+                    cv2.destroyAllWindows()
+            
+                    if isSocket==1:
+                        socket.emit('emoNode', 'pause;pause;pause;pause;pause;pause')
+            
+            
+                    print('Session paused. Press any key and then press enter to resume.')
+                    x=input()
+                    video_capture = cv2.VideoCapture(0)
+                    keyPressStart()
+                    print('Session Resumed. Press `q` to stop, `p` to pause. (Keys to be pressed on terminal)')
+                if(ch=='q'):
+                    break
 
+    print('Session ended.')
     if isSocket==1:
         socket.emit('emoNode', 'saving;saving;saving;saving;saving;saving')
 
@@ -303,7 +317,8 @@ while True:
 
     emoAccuracy = np.array(emoAccuracy)
     emoAccuracy = np.reshape(emoAccuracy,(-1,7))
-    print(emoAccuracy.shape)
+    if debug==1:
+        print(emoAccuracy.shape)
 
     trace1 = go.Scatter(
             x = time_array,
@@ -392,10 +407,13 @@ while True:
     # When everything is done, release the capture
     video_capture.release()
     cv2.destroyAllWindows()
-    #keyPressEnd()
+    keyPressEnd()
+    if firstTime==1:
+        time.sleep(2)
+        firstTime = 0
     print('Figures saved')
     if isSocket==1:
         socket.emit('emoNode', 'end;end;end;end;end;end')
 
 
-print('Server Ended')
+print('Server Closed')
