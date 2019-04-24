@@ -310,6 +310,8 @@ while True:
     if isSocket==1:
         socket.emit('emoNode', 'saving;saving;saving;saving;saving;saving')
 
+    video_capture.release()
+    cv2.destroyAllWindows()
 
 
     #Engagement Level Graph
@@ -356,57 +358,66 @@ while True:
     traces.append(go.Scatter(
         x = time_array,
         y = emoAccuracy[:,0],
+        line = dict(color = 'red'),
         mode = 'lines',
         name = 'Anger'
     ))
     traces.append(go.Scatter(
         x = time_array,
         y = emoAccuracy[:,1],
+        line = dict(color = 'yellow'),
         mode = 'lines',
         name = 'Disgust'
     ))
     traces.append(go.Scatter(
         x = time_array,
         y = emoAccuracy[:,2],
+        line = dict(color = 'green'),
         mode = 'lines',
         name = 'Fear'
     ))
     traces.append(go.Scatter(
         x = time_array,
         y = emoAccuracy[:,3],
+        line = dict(color = 'blue'),
         mode = 'lines',
         name = 'Happiness'
     ))
     traces.append(go.Scatter(
         x = time_array,
         y = emoAccuracy[:,4],
+        line = dict(color = 'red'),
         mode = 'lines',
         name = 'Sadness'
     ))
     traces.append(go.Scatter(
         x = time_array,
         y = emoAccuracy[:,5],
+        line = dict(color = 'yellow'),
         mode = 'lines',
         name = 'Surprise'
     ))
     traces.append(go.Scatter(
         x = time_array,
         y = emoAccuracy[:,6],
+        line = dict(color = 'blue'),
         mode = 'lines',
         name = 'Neutral'
     ))
 
-    data4 = go.Data(traces)
-    layout4 = go.Layout(
-        title = "Emotion Confidence v Video Time",
-        width = 5000,
-        height = 5000
-    )
-    figure4 = go.Figure(data = data4, layout = layout4)
-    pio.write_image(figure4, '../public_static/analytics/fig4.png')
+    for i in range(7):
+
+        data4 = go.Data([traces[i]])
+        layout4 = go.Layout(
+            title = emotions[i] + ' Confidence v Video Time',
+            yaxis = {'range':[0.0,1.0]}
+        )
+        figure4 = go.Figure(data = data4, layout = layout4)
+        datapath = '../public_static/analytics/'
+        print(datapath + 'emofig' + str(i) + '.png')
+        pio.write_image(figure4, datapath + 'emofig' + str(i) + '.png')
+
     # When everything is done, release the capture
-    video_capture.release()
-    cv2.destroyAllWindows()
     keyPressEnd()
     if firstTime==1:
         time.sleep(2)
